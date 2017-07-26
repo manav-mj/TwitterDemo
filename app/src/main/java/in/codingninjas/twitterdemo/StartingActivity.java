@@ -41,9 +41,13 @@ public class StartingActivity extends AppCompatActivity implements CustomAdapter
 
         showProgress(true);
 
-        defaultTwitterAdapter = new TweetTimelineListAdapter.Builder(this)
-                .setTimeline(userTimeline)
-                .build();
+//        UserTimeline userTimeline = new UserTimeline.Builder()
+//                .screenName("codingninjashq")
+//                .build();
+//
+//        defaultTwitterAdapter = new TweetTimelineListAdapter.Builder(this)
+//                .setTimeline(userTimeline)
+//                .build();
 
         getHomeTimeline();
 
@@ -51,8 +55,6 @@ public class StartingActivity extends AppCompatActivity implements CustomAdapter
 //        customAdapter = new CustomAdapter(this, userTimeline, this);
 
         listView = (ListView) findViewById(R.id.list);
-
-//        listView.setAdapter(customAdapter);
 
 
     }
