@@ -4,9 +4,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -14,9 +12,16 @@ import android.widget.Toast;
 import com.twitter.sdk.android.core.TwitterCore;
 import com.twitter.sdk.android.core.models.Tweet;
 import com.twitter.sdk.android.tweetui.FixedTweetTimeline;
-import com.twitter.sdk.android.tweetui.Timeline;
 import com.twitter.sdk.android.tweetui.TweetTimelineListAdapter;
 import com.twitter.sdk.android.tweetui.UserTimeline;
+
+import java.util.ArrayList;
+
+import in.codingninjas.twitterdemo.network.ApiClient;
+import in.codingninjas.twitterdemo.network.ApiInterface;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class StartingActivity extends AppCompatActivity implements CustomAdapter.OnTweetClickListener {
 
@@ -36,22 +41,43 @@ public class StartingActivity extends AppCompatActivity implements CustomAdapter
 
         showProgress(true);
 
-        userTimeline = new UserTimeline.Builder()
-                .screenName("codingninjashq")
-                .build();
-
         defaultTwitterAdapter = new TweetTimelineListAdapter.Builder(this)
                 .setTimeline(userTimeline)
                 .build();
 
+        getHomeTimeline();
+
         // custom adapter made to handle onClick on each tweet view
-        customAdapter = new CustomAdapter(this, userTimeline, this);
+//        customAdapter = new CustomAdapter(this, userTimeline, this);
 
         listView = (ListView) findViewById(R.id.list);
 
-        listView.setAdapter(customAdapter);
+//        listView.setAdapter(customAdapter);
 
-        showProgress(false);
+
+    }
+
+    private void getHomeTimeline() {
+        ApiInterface apiInterface = ApiClient.getApiInterface();
+        Call<ArrayList<Tweet>> call = apiInterface.getHomeTimeline();
+        call.enqueue(new Callback<ArrayList<Tweet>>() {
+            @Override
+            public void onResponse(Call<ArrayList<Tweet>> call, Response<ArrayList<Tweet>> response) {
+
+                FixedTweetTimeline homeTimeline = new FixedTweetTimeline.Builder()
+                        .setTweets(response.body())
+                        .build();
+
+                customAdapter = new CustomAdapter(StartingActivity.this, homeTimeline, StartingActivity.this);
+                listView.setAdapter(customAdapter);
+                showProgress(false);
+            }
+
+            @Override
+            public void onFailure(Call<ArrayList<Tweet>> call, Throwable t) {
+
+            }
+        });
     }
 
     @Override
@@ -61,10 +87,7 @@ public class StartingActivity extends AppCompatActivity implements CustomAdapter
 
     public void logout(View view) {
         TwitterCore.getInstance().getSessionManager().clearActiveSession();
-        SharedPreferences sp = getSharedPreferences(MainActivity.SP_NAME, MODE_PRIVATE);
-        sp.edit().clear().commit();
-
-        startActivity(new Intent(this, MainActivity.class));
+        startActivity(new Intent(this, LoginActivity.class));
         finish();
     }
 
